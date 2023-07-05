@@ -82,95 +82,199 @@ router.post(
   }
 );
 
-router.post("/add", async(req, res, next) => {
+// router.post("/add", async(req, res, next) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(400).json({ errors: errors.array() });
+//   }
+// const counter = Number(await Quizes.countDocuments()) + 1;
+//   await Quizes.create({ name: `quiz ${counter}` })
+//     .then(
+//       async (quiz) => {
+//         let sections = [
+//           {
+//             title: "section 1",
+//             position: 1,
+//             quizId: quiz._id,
+//             parts: [
+//               {
+//                 title: "Section 1 Part 1",
+//                 position: 1,
+//                 questions: 25,
+//               },
+//             ],
+//           },
+//           {
+//             title: "section 2",
+//             position: 2,
+//             quizId: quiz._id,
+//             parts: [
+//               {
+//                 title: "Section 2 Part 1",
+//                 position: 2,
+//                 questions: 12,
+//               },
+//               {
+//                 title: "Section 2 Part 2",
+//                 position: 3,
+//                 questions: 28,
+//               },
+//             ],
+//           },
+//         ];
+//         for (let i = 0; i < sections.length; i++) {
+//           Sections.create(sections[i]).then((section) => {
+//             for (let j = 0; j < sections[i].parts.length; j++) {
+//               Parts.create({
+//                 ...sections[i].parts[j],
+//                 sectionId: section._id,
+//               }).then((part) => {
+//                 for (let k = 0; k < sections[i].parts[j].questions; k++) {
+//                   Questions.create({
+//                     question: "Question " + (+k + 1),
+//                     feedback: "feedback " + (+k + 1),
+//                     partId: part._id,
+//                   }).then(async (question) => {
+//                     await Answers.create({
+//                       answer: "wrong",
+//                       isCorrect: false,
+//                       questionId: question._id,
+//                     });
+//                     await Answers.create({
+//                       answer: "wrong",
+//                       isCorrect: false,
+//                       questionId: question._id,
+//                     });
+//                     await Answers.create({
+//                       answer: "wrong",
+//                       isCorrect: false,
+//                       questionId: question._id,
+//                     });
+//                     await Answers.create({
+//                       answer: "correct",
+//                       isCorrect: true,
+//                       questionId: question._id,
+//                     });
+//                   });
+//                   setTimeout(() => {
+//                     res.json({
+//                       msg: "Quiz Created Successfully",
+//                       data:quiz,
+//                     });
+//                   }, 8000);
+//                 }
+//               });
+//             }
+//           });
+//         }
+//       },
+//       (err) => next(err)
+//     )
+//     .catch((err) => next(err));
+// });
+
+router.post("/add", async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-const counter = Number(await Quizes.countDocuments()) + 1;
-  await Quizes.create({ name: `quiz ${counter}` })
-    .then(
-      async (quiz) => {
-        let sections = [
+  const counter = Number(await Quizes.countDocuments()) + 1;
+  try {
+    const quiz = await Quizes.create({ name: `quiz ${counter}` });
+    let sections = [
+      {
+        title: "section 1",
+        position: 1,
+        quizId: quiz._id,
+        parts: [
           {
-            title: "section 1",
+            title: "Section 1 Part 1",
             position: 1,
-            quizId: quiz._id,
-            parts: [
-              {
-                title: "Section 1 Part 1",
-                position: 1,
-                questions: 25,
-              },
-            ],
+            questions: 25,
+          },
+        ],
+      },
+      {
+        title: "section 2",
+        position: 2,
+        quizId: quiz._id,
+        parts: [
+          {
+            title: "Section 2 Part 1",
+            position: 2,
+            questions: 12,
           },
           {
-            title: "section 2",
-            position: 2,
-            quizId: quiz._id,
-            parts: [
-              {
-                title: "Section 2 Part 1",
-                position: 2,
-                questions: 12,
-              },
-              {
-                title: "Section 2 Part 2",
-                position: 3,
-                questions: 28,
-              },
-            ],
+            title: "Section 2 Part 2",
+            position: 3,
+            questions: 28,
           },
-        ];
-        for (let i = 0; i < sections.length; i++) {
-          Sections.create(sections[i]).then((section) => {
-            for (let j = 0; j < sections[i].parts.length; j++) {
-              Parts.create({
-                ...sections[i].parts[j],
-                sectionId: section._id,
-              }).then((part) => {
-                for (let k = 0; k < sections[i].parts[j].questions; k++) {
-                  Questions.create({
-                    question: "Question " + (+k + 1),
-                    feedback: "feedback " + (+k + 1),
-                    partId: part._id,
-                  }).then(async (question) => {
-                    await Answers.create({
-                      answer: "wrong",
-                      isCorrect: false,
-                      questionId: question._id,
-                    });
-                    await Answers.create({
-                      answer: "wrong",
-                      isCorrect: false,
-                      questionId: question._id,
-                    });
-                    await Answers.create({
-                      answer: "wrong",
-                      isCorrect: false,
-                      questionId: question._id,
-                    });
-                    await Answers.create({
-                      answer: "correct",
-                      isCorrect: true,
-                      questionId: question._id,
-                    });
-                  });
-                  setTimeout(() => {
-                    res.json({
-                      msg: "Quiz Created Successfully",
-                      data:quiz,
-                    });
-                  }, 8000);
-                }
-              });
-            }
-          });
-        }
+        ],
       },
-      (err) => next(err)
-    )
-    .catch((err) => next(err));
+    ];
+
+    const sectionPromises = sections.map(async (sectionData) => {
+      const section = await Sections.create({
+        ...sectionData,
+        quizId: quiz._id,
+      });
+
+      const partPromises = sectionData.parts.map(async (partData) => {
+        const part = await Parts.create({
+          ...partData,
+          sectionId: section._id,
+        });
+
+        const questionPromises = Array.from({ length: partData.questions }).map(
+          async (_, index) => {
+            const question = await Questions.create({
+              question: "Question " + (index + 1),
+              feedback: "feedback " + (index + 1),
+              partId: part._id,
+            });
+
+            const answerPromises = [
+              Answers.create({
+                answer: "wrong",
+                isCorrect: false,
+                questionId: question._id,
+              }),
+              Answers.create({
+                answer: "wrong",
+                isCorrect: false,
+                questionId: question._id,
+              }),
+              Answers.create({
+                answer: "wrong",
+                isCorrect: false,
+                questionId: question._id,
+              }),
+              Answers.create({
+                answer: "correct",
+                isCorrect: true,
+                questionId: question._id,
+              }),
+            ];
+
+            await Promise.all(answerPromises);
+          }
+        );
+
+        await Promise.all(questionPromises);
+      });
+
+      await Promise.all(partPromises);
+    });
+
+    await Promise.all(sectionPromises);
+
+    res.json({
+      msg: "Quiz Created Successfully",
+      data: quiz,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.patch("/:id", (req, res, next) => {
